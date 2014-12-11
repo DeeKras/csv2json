@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block header_content %}
+<h1>
+    Welcome to Converter!
+</h1>
+{% endblock %}
+{% block content %}
+    Here is your {{results_type}} file:
+    <br><br>
+    {{output_file}}
+{% endblock %}
