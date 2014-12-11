@@ -5,8 +5,8 @@
 </h1>
 {% endblock %}
 {% block content %}
-<form action='url_for(convert_format)', method='post'>
-    {{form.data_blob.label}}: {{form.data_blob(height="400")}}
+<form action = "{{ url_for('convert_format') }}", method='post'>
+    {{form.data_blob.label}}: {{form.data_blob(size="400")}}
     <br><br>
     {{ form.csrf_token }}
     {{form.data_type.label}}:
