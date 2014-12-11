@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block header_content %}
+<h1>
+    Welcome to Converter!
+</h1>
+{% endblock %}
+{% block content %}
+<form action='url_for(convert_format)', method='post'>
+    {{form.data_blob.label}}: {{form.data_blob(height="400")}}
+    <br><br>
+    {{ form.csrf_token }}
+    {{form.data_type.label}}:
+    {% for choice in form.data_type %}
+        <tr>
+            <td>{{choice}}</td>
+            <td>{{choice.label}}</td>
+        </tr>
+    {% endfor %}
+    <br><br>
+
+    <input type='submit' value='Convert it!'>
+</form>
+
+{% endblock %}
