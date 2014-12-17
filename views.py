@@ -1,11 +1,10 @@
 """
     This app converts data from csv <--> json.
     User pastes in the data and chooses the data_type to change it to.
-    app does the conversion and presents the converted data as a file for download.
+    app does the conversion and presents the converted data as a file for download or to copy to clipboard.
     --
     uses WTForms, SQLAlchemy
 """
-
 from flask import Flask, render_template, redirect, url_for, request, flash, make_response, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from os import urandom
@@ -13,8 +12,6 @@ import csv
 import json
 import cStringIO
 import pyperclip
-
-
 
 from forms import PasteDataForm
 
@@ -26,12 +23,10 @@ db = SQLAlchemy(app)
 output_file = 'output_file.txt'
 pasted_data_file = 'pasted_data_file.txt'
 
-
-
-
 @app.route('/')
 def home():
-    return render_template('home.html', form=PasteDataForm())
+    pasted_data = ""
+    return render_template('home.html', pasted_data=pasted_data, form=PasteDataForm())
 
 @app.route('/results', methods= ['GET','POST'])
 def results():
@@ -43,7 +38,7 @@ def results():
         delimiters = str(form.delimiters.data)
         uuid = urandom(16).encode('hex')  #will use this for unique users using the program
         pasted_data = form.data_blob.data
-        session['data_type'] = data_type
+        session['data_type'] = data_type #save so can use this as the extension for filename, when user clicks 'download'
 
         with open(pasted_data_file, "w") as p: # save to a (temporary file because so large)
             p.write(pasted_data)
@@ -51,51 +46,39 @@ def results():
         #if user didn't choose a data type to convert to
         if data_type not in ['csv', 'json']:
             flash("You must select a format to convert to")
-            return redirect(url_for('home'))
+            return render_template('home.html', pasted_data= pasted_data, form=PasteDataForm())
 
         elif data_type == 'csv':  # meaning convert to csv
-            output_file = json_to_csv(pasted_data_file)
+            output = json_to_csv(pasted_data_file)
 
         elif data_type == 'json':  # meaning convert to json
-            output_file = csv_to_json(pasted_data_file, header_row, delimiters)
+            output = csv_to_json(pasted_data_file, header_row, delimiters)
 
-        session['output'] = output_file
+        session['output'] = output  #save the output, so can use it if user clicks 'copy' or 'download'
 
     return render_template("results.html", data_type=data_type,
-                                           output_file=output_file)
+                                           output=output)
 
 
 @app.route('/download', methods=['GET','POST'])
 def download():
-    output_file = session['output']
+    output = session['output']
     data_type = session['data_type']
 
     if request.form['submit'] == 'copy':
-        pyperclip.copy(output_file)
+        pyperclip.copy(output)
         flash ("The file should be in your clipboard. You can now paste it.")
-        # clipboard = pyperclip.paste()
         return render_template("results.html", data_type=data_type,
-                                           output_file=output_file)
+                                           output=output)
 
     elif request.form['submit'] == 'download':
         response = make_response(str(output_file)) # this creates a file with the converted data on the user's computer
-        response.headers["Content-Disposition"] = "attachment; filename=converted.{}".format(data_type)
+        response.headers["Content-Disposition"]="attachment; filename=converted.{}".format(data_type)
         return response
 
 def json_to_csv(pasted_data_file):
-
     with open(pasted_data_file, 'rb') as jsonfile:
         to_convert = json.load(jsonfile)
-
-    # with open(csv_workspace, 'w') as csvfile:
-    #     fieldnames = to_convert[0].keys()
-    #     output_file = csv.DictWriter(csvfile, quoting=csv.QUOTE_NONNUMERIC, 
-    #                                             fieldnames=fieldnames, 
-    #                                             delimiter=',', 
-    #                                             lineterminator='\n')
-    #     output_file.writeheader()  #header row
-    #     for row in to_convert:
-    #         output_file.writerow(row)
 
     output = cStringIO.StringIO()
     output.write("{}\n".format(", ".join(to_convert[0].keys())))
@@ -126,7 +109,6 @@ def csv_to_json(pasted_data_file, header_row, delimiter):
 
             output.append(row)
 
-             
     json.dump(output, open(output_file, 'w'), indent=4, sort_keys=False)
     output = json.load(open(output_file, "r"))
 
