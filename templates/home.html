@@ -5,7 +5,7 @@
 </h1>
 {% endblock %}
 {% block content %}
-<form action = "{{ url_for('download') }}", method='post'>
+<form action = "{{ url_for('results') }}", method ='post'>
     {{form.data_blob.label}}:  <br>  
     {{form.data_blob(cols="70", rows="15")}}
     <br><br>

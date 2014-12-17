@@ -5,9 +5,19 @@
 </h1>
 {% endblock %}
 {% block content %}
-    <form action = "{{ url_for('download') }}", method='GET'>
-
-    <input type='submit' value='download'>
-    </FORM>
-
- {% endblock %}
+<form action = "/download", method = "post">
+{{data_type}} 
+<input type = "submit" name = "submit" value = "download">
+<input type = "submit" name = "submit" value = "copy">
+<br>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <font color = 'red'>{{ message }}</font>
+        {% endfor %}
+    <br>
+    {%endif%}
+{% endwith %}
+<pre>{{output_file}}</pre>
+</form>
+{% endblock %}
