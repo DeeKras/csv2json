@@ -5,10 +5,19 @@
 </h1>
 {% endblock %}
 {% block content %}
-<form action = "{{ url_for('convert_format') }}", method='post'>
-    {{form.data_blob.label}}: {{form.data_blob(size="400")}}
+<form action = "{{ url_for('download') }}", method='post'>
+    {{form.data_blob.label}}:  <br>  
+    {{form.data_blob(cols="70", rows="15")}}
     <br><br>
     {{ form.csrf_token }}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <font color = 'red'>{{ message }}</font>
+        {% endfor %}
+    <br>
+    {%endif%}
+    {% endwith %}
     {{form.data_type.label}}:
     {% for choice in form.data_type %}
         <tr>
@@ -16,9 +25,21 @@
             <td>{{choice.label}}</td>
         </tr>
     {% endfor %}
+    <input type='submit' value='Download File'><br>
     <br><br>
+    <hr>
+    <b> About the CSV file to be converted:</b><br>
+    {{form.header_row.label}}:     {{form.header_row}}<br>
+    {{form.delimiters.label}}: 
+        {% for choice in form.delimiters %}
+        <tr>
+            <td>{{choice}}</td>
+            <td>{{choice.label}}</td>
+        </tr>
+    {% endfor %}
 
-    <input type='submit' value='Convert it!'>
 </form>
 
 {% endblock %}
+
+

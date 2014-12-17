@@ -5,7 +5,9 @@
 </h1>
 {% endblock %}
 {% block content %}
-    Here is your {{data_type}} file:
-    <br><br>
-    {{output_file}}
-{% endblock %}
+    <form action = "{{ url_for('download') }}", method='GET'>
+
+    <input type='submit' value='download'>
+    </FORM>
+
+ {% endblock %}
